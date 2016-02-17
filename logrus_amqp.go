@@ -1,16 +1,12 @@
 package logrus_amqp
 
 import (
-	"fmt"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
 type AMQPHook struct {
-	AMQPServer   string
-	Username     string
-	Password     string
+	AMQPUrl   string
 	Exchange     string
 	ExchangeType string
 	RoutingKey   string
@@ -22,12 +18,10 @@ type AMQPHook struct {
 	AutoDeleted  bool
 }
 
-func NewAMQPHook(server, username, password, exchange, routingKey string) *AMQPHook {
+func NewAMQPHook(url, exchange, routingKey string) *AMQPHook {
 	hook := AMQPHook{}
 
-	hook.AMQPServer = server
-	hook.Username = username
-	hook.Password = password
+	hook.AMQPUrl = url
 	hook.Exchange = exchange
 	hook.ExchangeType = "direct"
 	hook.Durable = true
@@ -37,9 +31,8 @@ func NewAMQPHook(server, username, password, exchange, routingKey string) *AMQPH
 }
 
 // Fire is called when an event should be sent to the message broker
-func (hook *AMQPHook) Fire(entry *logrus.Entry) error {
-	dialURL := fmt.Sprintf("amqp://%s:%s@%s/", hook.Username, hook.Password, hook.AMQPServer)
-	conn, err := amqp.Dial(dialURL)
+func (hook *AMQPHook) Fire(entry *logrus.Entry) error {	
+	conn, err := amqp.Dial(hook.AMQPUrl)
 	if err != nil {
 		return err
 	}
